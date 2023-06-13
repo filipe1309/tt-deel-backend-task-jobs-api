@@ -7,4 +7,13 @@ describe('Get Endpoints', () => {
             .get('/contracts/1')
         expect(res.statusCode).toEqual(401)
     })
+
+
+    it('should return a contract by id', async () => {
+        const res = await request(app)
+            .get('/contracts/2')
+            .set('profile_id', 1)
+        expect(res.statusCode).toEqual(200)
+        expect(res.body).toHaveProperty('ClientId')
+    })
 })
