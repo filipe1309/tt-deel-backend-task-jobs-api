@@ -16,4 +16,14 @@ describe('Get Endpoints', () => {
         expect(res.statusCode).toEqual(200)
         expect(res.body).toHaveProperty('ClientId')
     })
+
+    it('should return a list of contracts', async () => {
+        const res = await request(app)
+            .get('/contracts')
+            .set('profile_id', 2)
+        expect(res.statusCode).toEqual(200)
+        expect(res.body.length).toBeGreaterThan(0)
+    })
 })
+
+
