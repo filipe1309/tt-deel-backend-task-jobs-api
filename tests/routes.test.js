@@ -24,6 +24,15 @@ describe('Get Endpoints', () => {
         expect(res.statusCode).toEqual(200)
         expect(res.body.length).toBeGreaterThan(0)
     })
+
+    it('should return a list of unpaid jobs', async () => {
+        const res = await request(app)
+            .get('/jobs/unpaid')
+            .set('profile_id', 1)
+        expect(res.statusCode).toEqual(200)
+        expect(res.body.length).toBe(1)
+        expect(res.body[0].Contract.status).toBe("in_progress")
+    })
 })
 
 
