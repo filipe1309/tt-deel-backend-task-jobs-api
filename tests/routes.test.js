@@ -1,20 +1,12 @@
 const request = require('supertest')
 const app = require('../src/app')
 
-
-beforeAll(async () => {
-    // await require('../src/model').sequelize.sync()
-    jest.setTimeout(10000)
-})
-
 describe('Contracts Endpoints', () => {
-
     it('should return 401 if profile_id header is not set', async () => {
         const res = await request(app)
             .get('/contracts/1')
         expect(res.statusCode).toEqual(401)
     })
-
 
     it('should return a contract by id', async () => {
         const res = await request(app)
@@ -62,5 +54,16 @@ describe('Jobs Endpoints', () => {
         expect(res.body.balance).toBe(1000)
     })
 })
+
+describe('Admin Endpoints', () => {
+    it('should return the best profession', async () => {
+        const res = await request(app)
+            .get('/admin/best-profession?start=2020-08-14T23:11:26.737Z&end=2020-08-17T19:11:26.737Z')
+            .set('profile_id', 1)
+        expect(res.statusCode).toEqual(200)
+        expect(res.body.profession).toBe("Programmer")
+        expect(res.body.total).toBe(2683)
+    })
+});
 
 
