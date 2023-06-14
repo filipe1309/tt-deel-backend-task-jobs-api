@@ -1,6 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const { sequelize } = require('./model')
+const { sequelize, Job } = require('./model')
 const Op = require('sequelize').Op;
 const { getProfile } = require('./middleware/getProfile')
 const app = express();
@@ -107,6 +107,38 @@ app.post('/jobs/:job_id/pay', getProfile, async (req, res) => {
     await contractor.save()
     await job.save()
     res.json(job)
+})
+
+/**
+ * @returns Deposits money into the the balance of a client, a client 
+ * can't deposit more than 25% his total of jobs to pay. (at the deposit moment)
+*/
+app.post('/balances/deposit/:userId', getProfile, async (req, res) => {
+    const { Profile, Job, Contract } = req.app.get('models')
+    const { userId } = req.params
+    const { amount } = req.body
+    const client = await Profile.findOne({
+        where: {
+            id: userId
+        }
+    })
+    if (!client) return res.status(404).end()
+    const jobs = await Job.findAll({
+        where: {
+            paid: null
+        },
+        include: [{
+            model: Contract,
+            where: {
+                ClientId: client.id
+            }
+        }]
+    })
+    const total = jobs.reduce((acc, job) => acc + job.price, 0)
+    if (amount > total * 0.25) return res.status(400).end()
+    client.balance += amount
+    await client.save()
+    res.json(client)
 })
 
 module.exports = app;
