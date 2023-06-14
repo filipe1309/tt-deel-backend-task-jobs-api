@@ -8,6 +8,7 @@ app.use(bodyParser.json());
 app.set('sequelize', sequelize)
 app.set('models', sequelize.models)
 
+
 /**
  * @returns contract by id
  */
@@ -64,6 +65,48 @@ app.get('/jobs/unpaid', getProfile, async (req, res) => {
         }]
     })
     res.json(jobs)
+})
+
+/**
+ * @returns *_POST_** `/jobs/:job_id/pay` - Pay for a job, 
+ * a client can only pay if his balance >= the amount to pay. 
+ * The amount should be moved from the client's balance to the contractor balance.
+*/
+app.post('/jobs/:job_id/pay', getProfile, async (req, res) => {
+    const { Job, Contract, Profile } = req.app.get('models')
+    const { job_id } = req.params
+    const job = await Job.findOne({
+        where: {
+            id: job_id,
+            paid: null
+        },
+        include: [{
+            model: Contract,
+            where: {
+                ClientId: req.profile.id
+            }
+        }]
+    })
+    if (!job) return res.status(404).end()
+    const client = await Profile.findOne({
+        where: {
+            id: req.profile.id
+        }
+    })
+    const contractor = await Profile.findOne({
+        where: {
+            id: job.Contract.ContractorId
+        }
+    })
+    if (client.balance < job.price) return res.status(400).end()
+    client.balance -= job.price
+    contractor.balance += job.price
+    job.paymentDate = new Date()
+    job.paid = true
+    await client.save()
+    await contractor.save()
+    await job.save()
+    res.json(job)
 })
 
 module.exports = app;
