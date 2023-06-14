@@ -44,8 +44,6 @@ describe('Jobs Endpoints', () => {
     })
 
     it('should deposit money into the balance of a client', async () => {
-        // timeout
-        jest.setTimeout(10000)
         const res = await request(app)
             .post('/balances/deposit/1')
             .set('profile_id', 1)
