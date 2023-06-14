@@ -99,14 +99,22 @@ app.post('/jobs/:job_id/pay', getProfile, async (req, res) => {
         }
     })
     if (client.balance < job.price) return res.status(400).end()
-    client.balance -= job.price
-    contractor.balance += job.price
-    job.paymentDate = new Date()
-    job.paid = true
-    await client.save()
-    await contractor.save()
-    await job.save()
-    res.json(job)
+
+    const t = await sequelize.transaction()
+    try {
+        client.balance -= job.price
+        contractor.balance += job.price
+        job.paid = true
+        job.paymentDate = new Date()
+        await client.save({ transaction: t })
+        await contractor.save({ transaction: t })
+        await job.save({ transaction: t })
+        await t.commit()
+        res.json(job)
+    } catch (e) {
+        await t.rollback()
+        res.status(500).end()
+    }
 })
 
 /**
@@ -117,6 +125,7 @@ app.post('/balances/deposit/:userId', getProfile, async (req, res) => {
     const { Profile, Job, Contract } = req.app.get('models')
     const { userId } = req.params
     const { amount } = req.body
+
     const client = await Profile.findOne({
         where: {
             id: userId
@@ -136,9 +145,17 @@ app.post('/balances/deposit/:userId', getProfile, async (req, res) => {
     })
     const total = jobs.reduce((acc, job) => acc + job.price, 0)
     if (amount > total * 0.25) return res.status(400).end()
-    client.balance += amount
-    await client.save()
-    res.json(client)
+
+    const t = await sequelize.transaction()
+    try {
+        client.balance += amount
+        await client.save({ transaction: t })
+        await t.commit()
+        res.json(client)
+    } catch (e) {
+        await t.rollback()
+        res.status(500).end()
+    }
 })
 
 /**
