@@ -177,4 +177,66 @@ app.get('/admin/best-profession', async (req, res) => {
     res.json({ "profession": bestProfession, "total": professions[bestProfession] })
 })
 
+/**
+ * @returns **_GET_** `/admin/best-clients?start=<date>&end=<date>&limit=<integer>` - returns the clients the paid the most for jobs in the query time period. limit query parameter should be applied, default limit is 2.
+
+```
+ [
+    {
+        "id": 1,
+        "fullName": "Reece Moyer",
+        "paid" : 100.3
+    },
+    {
+        "id": 200,
+        "fullName": "Debora Martin",
+        "paid" : 99
+    },
+    {
+        "id": 22,
+        "fullName": "Debora Martin",
+        "paid" : 21
+    }
+]
+```
+*/
+app.get('/admin/best-clients', async (req, res) => {
+    const { Job, Contract, Profile } = req.app.get('models')
+    const { start, end, limit } = req.query
+
+    const jobs = await Job.findAll({
+        where: {
+            paid: true,
+            paymentDate: {
+                [Op.between]: [start, end]
+            }
+        },
+        include: [{
+            model: Contract,
+            include: [{
+                model: Profile,
+                as: 'Client',
+                attributes: ['id', 'firstName', 'lastName']
+            }]
+        }]
+    })
+
+    const clients = {}
+    jobs.forEach(job => {
+        if (!clients[job.Contract.Client.id]) {
+            clients[job.Contract.Client.id] = job.price
+        } else {
+            clients[job.Contract.Client.id] += job.price
+        }
+    })
+    const bestClients = Object.keys(clients).map(clientId => {
+        return {
+            id: clientId,
+            fullName: `${jobs.find(job => job.Contract.Client.id == clientId).Contract.Client.firstName} ${jobs.find(job => job.Contract.Client.id == clientId).Contract.Client.lastName}`,
+            paid: clients[clientId]
+        }
+    }).sort((a, b) => b.paid - a.paid).slice(0, limit || 2)
+    res.json(bestClients)
+})
+
 module.exports = app;
