@@ -1,7 +1,9 @@
 const request = require('supertest')
 const app = require('../src/app')
 
+
 describe('Get Endpoints', () => {
+
     it('should return 401 if profile_id header is not set', async () => {
         const res = await request(app)
             .get('/contracts/1')
@@ -11,7 +13,7 @@ describe('Get Endpoints', () => {
 
     it('should return a contract by id', async () => {
         const res = await request(app)
-            .get('/contracts/2')
+            .get('/contracts/1')
             .set('profile_id', 1)
         expect(res.statusCode).toEqual(200)
         expect(res.body).toHaveProperty('ClientId')
@@ -32,6 +34,16 @@ describe('Get Endpoints', () => {
         expect(res.statusCode).toEqual(200)
         expect(res.body.length).toBe(1)
         expect(res.body[0].Contract.status).toBe("in_progress")
+    })
+})
+
+describe('Post Endpoints', () => {
+    it('should pay for a job', async () => {
+        const res = await request(app)
+            .post('/jobs/1/pay')
+            .set('profile_id', 1)
+        expect(res.statusCode).toEqual(200)
+        expect(res.body.paid).toBe(true)
     })
 })
 
