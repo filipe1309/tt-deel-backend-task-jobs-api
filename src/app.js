@@ -46,7 +46,7 @@ app.get('/contracts', getProfile, async (req, res) => {
 /**
  * @returns Get all unpaid jobs for a user (**_either_** a client or contractor), 
  * for **_active contracts only_**. (in_progress)
-*/
+ */
 app.get('/jobs/unpaid', getProfile, async (req, res) => {
     const { Job, Contract } = req.app.get('models')
     const jobs = await Job.findAll({
@@ -71,7 +71,7 @@ app.get('/jobs/unpaid', getProfile, async (req, res) => {
  * @returns *_POST_** `/jobs/:job_id/pay` - Pay for a job, 
  * a client can only pay if his balance >= the amount to pay. 
  * The amount should be moved from the client's balance to the contractor balance.
-*/
+ */
 app.post('/jobs/:job_id/pay', getProfile, async (req, res) => {
     const { Job, Contract, Profile } = req.app.get('models')
     const { job_id } = req.params
@@ -112,7 +112,7 @@ app.post('/jobs/:job_id/pay', getProfile, async (req, res) => {
 /**
  * @returns Deposits money into the the balance of a client, a client 
  * can't deposit more than 25% his total of jobs to pay. (at the deposit moment)
-*/
+ */
 app.post('/balances/deposit/:userId', getProfile, async (req, res) => {
     const { Profile, Job, Contract } = req.app.get('models')
     const { userId } = req.params
@@ -144,7 +144,7 @@ app.post('/balances/deposit/:userId', getProfile, async (req, res) => {
 /**
  * @returns Returns the profession that earned the most money (sum of jobs paid)
  * for any contactor that worked in the query time range.
-*/
+ */
 app.get('/admin/best-profession', async (req, res) => {
     const { Job, Contract, Profile } = req.app.get('models')
     const { start, end } = req.query
@@ -178,28 +178,27 @@ app.get('/admin/best-profession', async (req, res) => {
 })
 
 /**
- * @returns **_GET_** `/admin/best-clients?start=<date>&end=<date>&limit=<integer>` - returns the clients the paid the most for jobs in the query time period. limit query parameter should be applied, default limit is 2.
-
-```
- [
-    {
-        "id": 1,
-        "fullName": "Reece Moyer",
-        "paid" : 100.3
-    },
-    {
-        "id": 200,
-        "fullName": "Debora Martin",
-        "paid" : 99
-    },
-    {
-        "id": 22,
-        "fullName": "Debora Martin",
-        "paid" : 21
-    }
-]
-```
-*/
+ * @returns the clients the paid the most for jobs in the query time period. 
+ * Limit query parameter should be applied, default limit is 2.
+ *
+ *[
+ *    {
+ *        "id": 1,
+ *        "fullName": "Reece Moyer",
+ *        "paid" : 100.3
+ *    },
+ *    {
+ *        "id": 200,
+ *        "fullName": "Debora Martin",
+ *        "paid" : 99
+ *    },
+ *    {
+ *        "id": 22,
+ *        "fullName": "Debora Martin",
+ *        "paid" : 21
+ *    }
+ *]
+ */
 app.get('/admin/best-clients', async (req, res) => {
     const { Job, Contract, Profile } = req.app.get('models')
     const { start, end, limit } = req.query
