@@ -96,3 +96,18 @@ It would be great for example if you'd write some unit test / simple frontend de
 When you have finished the assignment, zip your repo (make sure to include .git folder) and send us the zip.
 
 Thank you and good luck! 🙏
+
+
+## Result
+
+Pros:
+- Added decent test coverage
+- All endpoints are functional
+Cons:
+- No database locking/prevention of concurrent calls on pay for job
+- Project structure in single routes file
+- Does not address logical gap of depositing in others balance
+- Does not handle job paid null/false correctly
+- Not using aggregation on sequelize/raw query, instead, doing it on app layer.
+- Does not prevent negative deposit amount
+- Admin endpoints don't check for invalid dates
